@@ -34,7 +34,7 @@ Grid InitGrid(int length, bool blank)
 {
 	if (blank)
 	{
-		Grid g(length, 0);
+		Grid g(length, Dead);
 		return g;
 	}
 	else
