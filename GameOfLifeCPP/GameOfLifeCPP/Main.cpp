@@ -33,7 +33,7 @@ inline void InitRNG()
 
 int GetStartValue()
 {
-	return 0;
+	return Alive;
 }
 #else
 inline void InitRNG()
@@ -58,7 +58,7 @@ Grid InitGrid(int length, bool blank)
 	{
 		Grid g(length);
 		//Init the values in the grid
-		for (int i = 0; i < grid.size(); i++)
+		for (unsigned i = 0; i < grid.size(); i++)
 		{
 			g[i] = GetStartValue();
 		}
@@ -128,10 +128,10 @@ UpdateBoard_SkipNeighborCheck:; //The goto jumps to here so that the loop still 
 
 void DrawBoard()
 {
-	for (int i = 0; i < grid.size(); i++)
+	for (unsigned i = 0; i < grid.size(); i++)
 	{
 		cout << (grid[i] == Alive ? 'O' : ' ') << ' ';
-		if (i % gridWidth == 0)
+		if ( (i + 1) % gridWidth == 0)
 			cout << endl;
 	}
 }
@@ -142,8 +142,8 @@ void RunSimulation()
 	while (true)
 	{
 		ClearPreviousBoard();
-		UpdateBoard();
 		DrawBoard();
+		UpdateBoard();
 		Sleep(waitTimeMS);
 	}
 }
