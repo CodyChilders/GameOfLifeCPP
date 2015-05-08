@@ -4,8 +4,6 @@
 #include <cstdlib>
 #include <ctime>
 
-#define coordinate(x,y) y*gridWidth+x
-
 using namespace std;
 
 typedef enum states { Dead = 0, Alive = 1 };
@@ -18,17 +16,36 @@ const int newlinesToClear = 50;
 
 Grid grid (gridWidth * gridHeight);
 
-//TODO make this use buckets
+#define USE_BUCKETS 1
+#if USE_BUCKETS
+#include "BucketRNG.h"
+typedef BucketRNG* RNG;
+
+float f(float x)
+{
+	return x; //this represents the function y = x
+}
+
+inline void InitRNG()
+{
+	//Create the buckets
+}
+
+int GetStartValue()
+{
+	return 0;
+}
+#else
 inline void InitRNG()
 {
 	srand(time(NULL));
 }
 
-//TODO generalize this so it can be customized
 inline int GetStartValue()
 {
 	return rand() % 2;
 }
+#endif
 
 Grid InitGrid(int length, bool blank)
 {
@@ -55,6 +72,11 @@ void ClearPreviousBoard()
 		cout << endl;
 }
 
+int coordinate(int x, int y)
+{
+	return x * gridWidth + y;
+}
+
 void UpdateBoard()
 {
 	//This will be the new board written into as we parse the old one
@@ -70,7 +92,13 @@ void UpdateBoard()
 			{
 				for (int dj = -1; dj <= 1; dj++)
 				{
-					int index = coordinate(i + di, j + dj);
+					int index;
+					//Make sure the index isn't out of bounds first.  Assume it is Dead if so, so just skip the checks and don't increment neighbors
+					if (i + di < 0 || i + di >= gridWidth * gridHeight || j + dj < 0 || j + dj >= gridWidth * gridHeight)
+						goto UpdateBoard_SkipNeighborCheck;
+					else
+						index = coordinate(i + di, j + dj);
+					//Make one final check to see if it is necessary to increment neighbors, and do it if so
 					if (index < 0 || index >= gridWidth + gridHeight)
 						goto UpdateBoard_SkipNeighborCheck;
 					if (grid[index] == Alive)
@@ -120,9 +148,24 @@ void RunSimulation()
 	}
 }
 
+void debug()
+{
+	for (int i = -1; i <= 1; i++)
+	{
+		for (int j = -1; j <= 1; j++)
+		{
+			cout << i << " " << j << ": " << coordinate(i, j) << endl;
+		}
+	}
+}
+
 int main()
 {
+	debug();
 	InitRNG();
 	grid = InitGrid(gridWidth * gridHeight, false);
 	RunSimulation();
 }
+
+//There seems to be a bug related to indexing.  When you index off the right edge, it checks the left item in the next row, 
+//and when you index off the left edge, it indexes the rightmost element one row up.
