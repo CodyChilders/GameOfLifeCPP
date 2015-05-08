@@ -30,15 +30,23 @@ inline int GetStartValue()
 	return rand() % 2;
 }
 
-inline Grid InitGrid(int length, bool blank)
+Grid InitGrid(int length, bool blank)
 {
-	Grid g(length);
-	//Init the values in the grid
-	for (int i = 0; i < grid.size(); i++)
+	if (blank)
 	{
-		g[i] = (blank ? 0 : GetStartValue() );
+		Grid g(length, 0);
+		return g;
 	}
-	return g;
+	else
+	{
+		Grid g(length);
+		//Init the values in the grid
+		for (int i = 0; i < grid.size(); i++)
+		{
+			g[i] = GetStartValue();
+		}
+		return g;
+	}
 }
 
 void ClearPreviousBoard()
@@ -47,9 +55,47 @@ void ClearPreviousBoard()
 		cout << endl;
 }
 
-inline void UpdateBoard()
+void UpdateBoard()
 {
-	Grid newBoard = InitGrid(gridWidth * gridHeight, true);
+	//This will be the new board written into as we parse the old one
+	Grid newGrid = InitGrid(grid.size(), true);
+	//The first two loops do the main pass over the array
+	for (int i = 0; i < gridWidth; i++)
+	{
+		for (int j = 0; j < gridHeight; j++)
+		{
+			//These next two loops check the 8 neighbors
+			int neighbors = 0;
+			for (int di = -1; di <= 1; di++)
+			{
+				for (int dj = -1; dj <= 1; dj++)
+				{
+					int index = coordinate(i + di, j + dj);
+					if (index < 0 || index >= gridWidth + gridHeight)
+						goto UpdateBoard_SkipNeighborCheck;
+					if (grid[index] == Alive)
+						neighbors++;
+UpdateBoard_SkipNeighborCheck:; //The goto jumps to here so that the loop still increments
+				}
+			}
+			//These decide the value of the cell based on the number of living neighbors
+			if (grid[coordinate(i, j)] == Alive) //Handle if the cell was initially alive
+			{
+				if (neighbors < 2 || neighbors > 3)
+					newGrid[coordinate(i, j)] = Dead;
+				else
+					newGrid[coordinate(i, j)] = Alive;
+			}
+			else //Handle if the cell was initially dead
+			{
+				if (neighbors == 3)
+					newGrid[coordinate(i, j)] = Alive;
+				else
+					newGrid[coordinate(i, j)] = Dead;
+			}
+		}
+	}
+	grid.swap(newGrid);
 }
 
 void DrawBoard()
